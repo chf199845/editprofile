@@ -1,5 +1,6 @@
 package com.example.edirprofile;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -8,9 +9,15 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,6 +25,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Spinner spinner = findViewById(R.id.spinner);
+        String[] subject = {"Blank","Mathematics", "Biology"};
+        ArrayAdapter<String> subjectList = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                subject);spinner.setAdapter(subjectList);
+
+        Spinner spinner2 = findViewById(R.id.spinner2);
+        String[] age = {"blank","under 18", "19-25", "26-30", "31-35", "36-40", "41-45", "46-50", "51-55", "56-60", "over 60"};
+        ArrayAdapter<String> ageList = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                age);spinner2.setAdapter(ageList);
+
+        Intent i = new Intent(Intent.ACTION_PICK, null);
+        i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        startActivityForResult(i, PHOTO_REQUEST_GALLERY);
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -55,10 +80,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void on_button_save_click (View view) {
 
+        Toast toast = Toast.makeText(this, "Saved", Toast.LENGTH_SHORT);
+        toast.show();
+
     }
 
     public void on_button_image_click (View view) {
 
+
     }
+
 
 }
