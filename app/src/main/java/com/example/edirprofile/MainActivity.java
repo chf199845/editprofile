@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent i = new Intent(Intent.ACTION_PICK, null);
         i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-        startActivityForResult(i, PHOTO_REQUEST_GALLERY);
+        //startActivityForResult(i, PHOTO_REQUEST_GALLERY);
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
