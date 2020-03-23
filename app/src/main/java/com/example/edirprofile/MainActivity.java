@@ -1,9 +1,12 @@
 package com.example.edirprofile;
 
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.hardware.camera2.CameraCharacteristics;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +26,6 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private final String CHANNEL_ID = "personal notification";
     private final int NOTIFICATION_ID = 001;
     private static final int PICK_IMAGE = 123;
+    private static final int REQUEST_CAMERA = 456;
     ImageView imageView;
     TextView textview4, textview6, textview14, textview;
     boolean save = false;
@@ -60,10 +63,11 @@ public class MainActivity extends AppCompatActivity {
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Pick an image"), PICK_IMAGE);
+//                Intent intent = new Intent();
+//                intent.setType("image/*");
+//                intent.setAction(Intent.ACTION_GET_CONTENT);
+//                startActivityForResult(Intent.createChooser(intent, "Pick an image"), PICK_IMAGE);
+                selectImage();
             }
         });
 
@@ -91,23 +95,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == PICK_IMAGE && data != null && data.getData() != null)
-        {
-            Uri imageuri = data.getData();
-            try{
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageuri);
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 145, 150, false));
-            }
-            catch (IOException e)
-            {
-               e.printStackTrace();
-            }
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if(requestCode == PICK_IMAGE && data != null && data.getData() != null)
+//        {
+//            Uri imageuri = data.getData();
+//            try{
+//                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageuri);
+//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 300, 300, false));
+//            }
+//            catch (IOException e)
+//            {
+//               e.printStackTrace();
+//            }
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -135,6 +139,59 @@ public class MainActivity extends AppCompatActivity {
 
         check();
     }
+
+    public void selectImage() {
+        final CharSequence[] items = {"Camera", "Gallery", "Cancel"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add image");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                if(items[i].equals("Camera"))
+                {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent, 0);
+                }
+                else if(items[i].equals("Gallery"))
+                {
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent, "Pick an image"), PICK_IMAGE);
+                }
+                else if(items[i].equals("Cancel"))
+                {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == PICK_IMAGE && data != null && data.getData() != null)
+        {
+            Uri imageUri = data.getData();
+            try{
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 300, 300, false));
+            }
+            catch (IOException e)
+            {
+               e.printStackTrace();
+            }
+        }
+
+        else if(requestCode == 0)
+        {
+            Bitmap bmp = (Bitmap) data.getExtras().get("data");
+            imageView.setImageBitmap(bmp);
+        }
+    }
+
 
     public void OpenGallery() {
         Intent gallery = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI);
