@@ -89,7 +89,7 @@ public class Database extends SQLiteOpenHelper {
         contentValues.put(Surname, item2);
         contentValues.put(PhoneNo, item3);
 
-        Log.d(TAG, "addData: Adding " + item1 + " , " + item2 + " and " + item3 + " to " + TABLE_TUTPROFILE);
+        Log.d(TAG, "addData: Adding " + item1 + ", " + item2 + " and " + item3 + " to " + TABLE_TUTPROFILE);
 
         long result = db.insert(TABLE_TUTPROFILE, null, contentValues);
 
