@@ -1,25 +1,19 @@
 package com.example.edirprofile;
 
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.hardware.camera2.CameraCharacteristics;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import android.provider.MediaStore;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -51,8 +45,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Notify();
-
         textview = findViewById(R.id.textView);
         textview4 = findViewById(R.id.textView4);
         textview6 = findViewById(R.id.textView6);
@@ -63,14 +55,9 @@ public class MainActivity extends AppCompatActivity {
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent();
-//                intent.setType("image/*");
-//                intent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(Intent.createChooser(intent, "Pick an image"), PICK_IMAGE);
                 selectImage();
             }
         });
-
 
         spinner = findViewById(R.id.spinner);
         String[] subject = {"Blank","Mathematics", "Biology", "Chemistry", "Physics", "Others"};
@@ -92,47 +79,6 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-    }
-
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if(requestCode == PICK_IMAGE && data != null && data.getData() != null)
-//        {
-//            Uri imageuri = data.getData();
-//            try{
-//                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageuri);
-//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 300, 300, false));
-//            }
-//            catch (IOException e)
-//            {
-//               e.printStackTrace();
-//            }
-//        }
-//    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void on_button_save_click (View view) {
@@ -177,28 +123,19 @@ public class MainActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             try{
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 300, 300, false));
+                imageView.setImageBitmap(bitmap);
             }
             catch (IOException e)
             {
                e.printStackTrace();
             }
         }
-
         else if(requestCode == 0)
         {
-            Bitmap bmp = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(bmp);
+            bitmap = (Bitmap) data.getExtras().get("data");
+            imageView.setImageBitmap(bitmap);
         }
     }
-
-
-    public void OpenGallery() {
-        Intent gallery = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        startActivityForResult(gallery, PICK_IMAGE);
-
-    }
-
 
     public void check() {
         String FName = textview4.getText().toString();
@@ -241,37 +178,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void savedata() {
+    public void updateData() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values=new ContentValues();
         String FName = textview4.getText().toString();
         String LName = textview6.getText().toString();
         String MobNum = textview14.getText().toString();
         String subject = spinner.getSelectedItem().toString();
         String age = spinner2.getSelectedItem().toString();
+        String bmp = imageView.getImageMatrix().toString();
+        String id = "";
 
-
+        values.put(Firstname, FName);
+        values.put(Surname, LName);
+        values.put(PhoneNo, MobNum);
+        values.put(TeachSub, subject);
+        values.put(Profile_Picture, bmp);
+        db.update(TABLE_TUTPROFILE,values,KEY_ID + "=" + id,null);
+        //I need to know the id to update the data in correct row.
+        //So this code is not test yet
     }
-
-    public void Notify() {
-        createNotificationChannel();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
-        builder.setSmallIcon(R.drawable.ic_launcher_background);
-        builder.setContentTitle("Notification");
-        builder.setContentText("Please check your schedule of tutorials.");
-        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        NotificationManagerCompat notificationManagerCompatCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompatCompat.notify(NOTIFICATION_ID, builder.build());
-    }
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Notification";
-            String description = "Tutorial notification";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-    }
-
 }
